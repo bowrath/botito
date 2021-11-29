@@ -1,0 +1,661 @@
+import os
+import discord
+from discord.ext import commands
+import random
+import asyncio
+from keep_alive import keep_alive
+import praw
+from discord.utils import get
+import time
+import datetime
+import os
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import db
+
+
+
+
+hiii = {
+  "type": "service_account",
+  "project_id": "botito-97706",
+  "private_key_id": "153fc26bf00e85b19949cf48542cb1d39e034028",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDCbhFWJ9dg+DNc\nenp5dhDiobriOXKzPfCAnKtrygPY5nTzgawcuNw9fdt6g0d5bXPLtLKNYGalVCW0\nM/dDxjsDpizBmi6DwAE/0Q2Bh8OOlcRMnQxNE0971taSeTQkQpKxD2NB5SZV1BHC\ngX3vEyL9B7Wd+NjHAvl0AdRyphRalvXJZB6Kdppu+gBfcDPypO+cjeW1nNtkwWJ6\n1ifJuksQ59CIGMYUSxUbhAQ2reegtQmnM/Lyslfy6Y3mHtfbT7oz1KdeMCsfT8sW\nLqOyuvOO1LDJ+skqq/6XHIKGrfsOUdpyLH5/LtG3qCGRXDU6OLelnM2X77zSNr2J\nlIj6jmx9AgMBAAECggEAKuACyrD2edfB277WizpR9ugbQg/RD121T2c9FgPyXT5U\nw+3welT5nEXIxHd2p3xPcLhkN3Dusb6goeBjwnpQQTm/3OGXKE6K9/utssaxhRvZ\nsdtf/w8nE/QIVTyNFwHnP0xZYwqZLYwabn4Hu1TI/mtYzYE2rIwnXkGZC7879c25\nhqUYAS50TIugJkI5To/7GzqWrlnwagLKtTU6AOQU2CjPaWsjojgREp/78ztsIXQy\nREHr6HujrvnJKARxJ6KKnsCpdlkGfswpk6g0uv+a60D4b8xO5ZmKQShhncyVZpoa\na7WRm/4KipbYkdxbfnZyhXhd+jt5lj5Yv2p4wmLYAQKBgQD1UJyv0Go7re8bPBt7\nluLFYv+7dedkNmJ0usJ/RAGcWA1h422EGxmoRJzX4Ut5fhplunxw3GzvUH0ptJWb\n/6gChLABBdp2NjHNrrtDPWA7GWKfr7pyjWGVTemEbhKuGdJwACKRka2hwsAfTVj7\nZwz05s5x6PJ+yGzcV9cFGUL5/QKBgQDK5g/w/T8ThgV/bWdKuz+euY+MXeHXwfny\nf2MZ2m1nS7T1FkaNw7Ph2DsFKhphuFC+Rlhq3+7kOwUC4JdQMS7Ma/wwCMqIND9b\nJhcv78lKp0I+uD7NecjR0gt6IAHpxavS7MKfLAFR0HZNE4f8D10O/K6yFLYtf58+\nIApRswiEgQKBgQC9QPOgr6lFYWqWGEkbj8xje3zPoqZhKZPLekmS5WRYuZWZb1uO\nD1o79rMJ2UXg9OhokvZuG5/vAKmPA0Jol1OGndcq8tkXWbgSdjsCJNeYwHzVtTyi\nI3ClPvZotIK0zjcLMQ96Pmk14olVnNaJHXdheK7MMmriZL2XQC0iQdrqAQKBgQC5\nYouePUWsqP/M9kEyXvQ6KoGmVwFLCck+cHYz4QelId8tMDU2wmFRMSh8B4QjVS0x\nLUUMIZ88mVBy2JJoiwefb+r0WJP07wgUWDFHc2gP9dLpS57WTzfVvn0OEMCuwBXG\nmt0YYjSydC4jLn1JKSB12RolTBdIaxsswEmtbE+UAQKBgERcTYzq7Y1fO882Qnnc\n8eTo4uzM9cTxG7HYyugMMDKHd0CqNJoAl1gJPh3tD0UepD1HnStdtbWIzBL9N9LM\nvjXz7lBtGVPp5GS4SRT9blc7/oyl/a7nS87aWCT9w0XE46a2x+f4N+SFdGopOIhS\n38PL4C0V5eIFTib5YupjRC8+\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-17cfb@botito-97706.iam.gserviceaccount.com",
+  "client_id": "103344260064145970575",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-17cfb%40botito-97706.iam.gserviceaccount.com"
+}
+
+
+
+
+
+
+cred = credentials.Certificate(hiii)
+databaseApp = firebase_admin.initialize_app(cred,{'databaseURL':os.environ['databaseURL']})
+
+intents = discord.Intents.default()
+intents.members = True
+
+client = commands.Bot(command_prefix="//", intents = intents)
+client.remove_command("help")
+mess = []
+haha = []
+greet = []
+activeguild = []
+active2guild = []
+messinfo = []
+msgsgs = []
+globalguild = []
+globalmessage = []
+spamauthor = []
+dels = []
+
+
+reddit = praw.Reddit(client_id = os.environ['redCLIENTID'],
+                     client_secret = os.environ['redCLIENTSECRET'],
+                     username = os.environ['redUSERNAME'],
+                     password = os.environ['redPASSWORD'],
+                     user_agent = "redUSERAGENT")
+
+
+@client.event
+async def on_reaction_add(reaction, user):
+  if user != client.user:
+    await reaction.message.add_reaction(reaction)
+
+vc = []
+
+@client.event
+async def on_voice_state_update(member, before, after):
+  botitoCategoryy = get(member.guild.categories, name = 'botito')
+  voice = discord.utils.get(botitoCategoryy.voice_channels, name=str(botitoCategoryy.voice_channels[0]))
+  if after.channel == voice:
+    test = await member.guild.create_voice_channel(name = f"{member.name}'s Channel",category = botitoCategoryy)
+    await member.move_to(test)
+    vc.append(f"{test}")
+    print(vc)
+    return
+  if f"{after.channel}" in vc:
+    print("joined")
+    vc.append(f"{after.channel}")
+    print(vc)
+  if after.channel == None:
+    voice1 = get(botitoCategoryy.voice_channels, name=str(botitoCategoryy.voice_channels[1]))
+    vvc = f"{before.channel}"
+    if vvc in vc:
+      vc.remove(f"{before.channel}")
+      print(vc)
+    if before.channel.name not in vc:
+      print("deleted")
+      await voice1.delete()
+
+@client.event
+async def on_guild_join(guild):
+  botitoCategory = get(guild.categories, name = 'botito')
+  reply = get(guild.roles, name = 'botito-reply')
+  logs = get(guild.channels, name = 'botito-logs')
+  memefeed = get(guild.channels, name = 'botito-meme')
+  confessionChannel = get(guild.channels, name = 'botito-confessions')
+  globalChannel = get(guild.channels, name = 'botito-global')
+  logsjoin = get(guild.roles, name = 'botito-logs-join')
+  logsdelete = get(guild.roles, name = 'botito-logs-delete')
+  logsedit = get(guild.roles, name = 'botito-logs-edit')
+  logsleave = get(guild.roles, name = 'botito-logs-leave')
+  botitoCategoryy = get(member.guild.categories, name = 'botito-server-stats')
+
+
+  if botitoCategory == None:
+    botitoCategory = get(guild.categories, name = 'botito')
+    await guild.create_category(name = '{}'.format("botito"))
+  if botitoCategoryy == None:
+    botitoCategory = get(guild.categories, name = 'botito-server-stats')
+    await guild.create_category(name = '{}'.format("botito"))
+  if logs:
+    await logs.send("Thanks for inviting me again")
+    await logs.send("Type //help to get the commands for configurations")
+  if logs == None:
+    botitoCategory = get(guild.categories, name = 'botito')
+    await guild.create_text_channel(name = '{}'.format("botito-logs"),category = botitoCategory)
+    logs = get(guild.channels, name = 'botito-logs')
+    await logs.send("Type //help to get the commands for configurations")
+  if reply == None:
+    await guild.create_role(name="botito-reply")
+  if memefeed == None:
+    await guild.create_text_channel(name = '{}'.format("botito-meme"),category = botitoCategory)
+    feed = get(guild.channels, name = 'botito-meme')
+    await feed.send("ㅤ")
+  if confessionChannel == None:
+    await guild.create_text_channel(name = '{}'.format("botito-confessions"),category = botitoCategory)
+    confessionChannel = get(guild.channels, name = 'botito-confessions')
+    await confessionChannel.send("You can send you confessions here by typing //confess")
+  if globalChannel == None:
+    await guild.create_text_channel(name = '{}'.format("botito-global"),category = botitoCategory)
+    globalChannel = get(guild.channels, name = 'botito-global')
+    await globalChannel.send("You can chat with others servers using botito by typing a message here")
+  if discord.utils.get(botitoCategoryy.voice_channels, name=str(botitoCategoryy.voice_channels[0])) == None:
+
+    await guild.create_voice_channel(name = f"Member Count: {guild.member_count}",category = botitoCategoryy)
+    voice = discord.utils.get(botitoCategoryy.voice_channels, name=str(botitoCategoryy.voice_channels[0])) 
+    update = "Member Count: " + str(guild.member_count)
+    await voice.edit(name=update)
+
+    await guild.create_voice_channel(name = f"User Count:",category = botitoCategoryy)
+    userCount = len([m
+    for m in guild.members
+    if not m.bot])
+    voice = discord.utils.get(botitoCategoryy.voice_channels, name=str(botitoCategoryy.voice_channels[1])) 
+    update = "User Count: " + str(userCount) 
+    await voice.edit(name=update)
+
+    await guild.create_voice_channel(name = f"Bot Count:",category = botitoCategoryy)
+    userCount = len([m
+    for m in guild.members
+    if m.bot])
+    voice = discord.utils.get(botitoCategoyry.voice_channels, name=str(botitoCategoryy.voice_channels[2])) 
+    update = "Bot Count: " + str(userCount) 
+    await voice.edit(name=update)
+  if logsleave == None:
+    await ctx.guild.create_role(name="botito-logs-leave")
+  if logsjoin == None:
+    await ctx.guild.create_role(name="botito-logs-join")
+  if logsedit == None:
+    await ctx.guild.create_role(name="botito-logs-edit")
+  if logsdelete == None:
+    await ctx.guild.create_role(name="botito-logs-delete")
+
+
+async def memberUpdate(member):
+  if channel1:
+    await channel1.edit(name=f"Member Count: {guild.member_count}")
+    userCount = len([m
+    for m in member.guild.members
+    if not m.bot])
+    update = "User count: " + str(userCount) 
+    await channel2.edit(name=update)
+
+
+    userCount = len([m
+    for m in member.guild.members
+    if m.bot])
+    update = "Bot count: " + str(userCount) 
+    await channel3.edit(name=update)
+
+@client.event
+async def on_member_remove(member):
+  logsleave = get(member.guild.roles, name = 'botito-logs-leave')
+  log = get(member.guild.channels, name = 'botito-logs')
+  if logsleave:
+    await log.send(f"```{member} has left the server...```")
+  botitoCategory = get(member.guild.categories, name = 'botito')
+  botitoCategoryy = get(member.guild.categories, name = 'botito-server-stats')
+  channel1 = discord.utils.get(botitoCategory.voice_channels, name=str(botitoCategoryy.voice_channels[0]))
+  channel2 = discord.utils.get(botitoCategory.voice_channels, name=str(botitoCategoryy.voice_channels[1]))
+  channel3 = discord.utils.get(botitoCategory.voice_channels, name=str(botitoCategoryy.voice_channels[2]))
+  await memberUpdate(member)
+bannedBots = [""]
+
+@client.event
+async def on_member_join(member):
+  botitoCategory = get(member.guild.categories, name = 'botito')
+  lock = get(member.guild.roles, name = 'botito-server-lock')
+  welcome = get(member.guild.channels, name = 'botito-logs')
+  if lock:
+    await member.send(f"{member.guild} server is currently locked")
+    await member.kick()
+    if logsjoin:
+        await welcome.send(f"{member} is automatically kicked because server is locked.\nUser //serverunlock to unlock server")
+        return
+    return
+  guild = member.guild
+  name = str(member.name)
+  memberCount = str(member.guild.member_count)
+  icon = str(member.avatar_url)
+  embed = discord.Embed(color=discord.Color.red(),title=(f"{name} joined the server"))
+  embed.set_image(url=icon)
+  embed.timestamp = datetime.datetime.utcnow()
+  embed.add_field(name=f"Member Count", value=f"{memberCount}th member", inline=True)
+  if str(member.id) in bannedBots:
+    await welcome.send(f"Someone added {member.mention} and I banned because it is a raid bot")
+    await member.ban()
+    return
+  logsjoin = get(member.guild.roles, name = 'botito-logs-join')
+  if channel1:
+    await memberUpdate(member)
+  if logsjoin:
+    await welcome.send(embed=embed)
+    await memberUpdate(member)
+    await member.send(f'**{(random.choice(welcomeMessage))} {member.guild}**')
+    return
+
+
+
+snipe_message_author = {}
+snipe_message_content = {}
+
+snipe_message_author_edit = {}
+snipe_message_content_edit = {}
+snipe_message_content_edit_after = {}
+
+@client.event
+async def on_message_delete(message):
+  if message.author.bot == True:
+    return
+  snipe_message_author[message.channel.id] = message.author
+  snipe_message_content[message.channel.id] = message.content
+  snipe_message_author_avatar = message.author.avatar_url
+  globall = get(message.guild.channels, name = 'botito-global')
+  if message.channel == globall:
+    return
+  log = get(message.guild.channels, name = 'botito-logs')
+  if message.author == client.user:
+    return
+  if "//confess" in message.content:
+    return
+  if f"message.content,message.author.id,message.guild.id" in dels:
+    return
+  em = discord.Embed(color = discord.Colour.red(),description = (f"{message.author.mention}'s message was deleted on {message.channel.mention}\nContent: {message.content}"))
+  em.timestamp = datetime.datetime.utcnow()
+  em.set_thumbnail(url=message.author.avatar_url)
+  logsdelete = get(message.guild.roles, name = 'botito-logs-delete')
+  if logsdelete:
+    embedd = await log.send(embed = em)
+    image = message.attachments[0].url
+    if image:
+      em.set_image(url = image)
+      await embedd.delete()
+      await log.send(embed = em)
+      return
+
+@client.event
+async def on_message_edit(before, after):
+  if before.author.bot == True:
+    return
+  if before.content in after.content:
+    return
+  snipe_message_author_edit[before.channel.id] = before.author
+  snipe_message_content_edit[before.channel.id] = before.content
+  snipe_message_content_edit_after[before.channel.id] = after.content
+  edit = discord.Embed(color = discord.Colour.red(),description = (f"{before.author.mention} edited a message in #{before.channel.mention}"))
+  edit.timestamp = datetime.datetime.utcnow()
+  edit.set_thumbnail(url=before.author.avatar_url)
+  log = get(before.guild.channels, name = 'botito-logs')
+  edit.add_field(name="from:", value= f"{before.content}")
+  edit.add_field(name="to:", value=f"{after.content}")
+  logsedit = get(before.guild.roles, name = 'botito-logs-edit')
+  if logsedit:
+    await log.send(embed = edit)
+
+
+async def memberUpdate(message):
+  botitoCategory = get(message.guild.categories, name = 'botito')
+  channel1 = discord.utils.get(botitoCategory.voice_channels, name=str(botitoCategory.voice_channels[0]))
+  channel2 = discord.utils.get(botitoCategory.voice_channels, name=str(botitoCategory.voice_channels[1]))
+  channel3 = discord.utils.get(botitoCategory.voice_channels, name=str(botitoCategory.voice_channels[2]))
+  if channel1:
+    await channel1.edit(name=f"Member Count: {message.guild.member_count}")
+    userCount = len([m
+    for m in message.guild.members
+    if not m.bot])
+    update = "User Count: " + str(userCount) 
+    await channel2.edit(name=update)
+
+    userCount = len([m
+    for m in message.guild.members
+    if m.bot])
+    update = "Bot Count: " + str(userCount) 
+    await channel3.edit(name=update)
+    return
+
+
+
+
+
+
+activenow = []
+activenoww = []
+activee = []
+@client.event
+async def on_message(message,amount=1):
+  ref = db.reference("/")
+  ref.update({'message' : str(message.content)})
+  message.content = message.content.lower()
+  def appendguild():
+    if message.author == client.user:
+      return
+    activeguild.append(message.guild)
+    return
+  appendguild()
+
+
+  def activve():
+    if message.channel.id in activenow:
+      return
+    if f"{message.guild}" in activee:
+      return
+    activenow.append(message.channel.id)
+    activee.append(f"{message.guild}")
+    return
+  def activvve():
+    if message.author.id in activenoww:
+      return
+    activenoww.append(message.author.id)
+    return
+  activve()
+  activvve()
+  if "//activeserver" in message.content:
+    globalen = len(activenow)
+    await message.channel.send(f"There are currently {globalen} active server")
+    print(activee)
+    return
+  if "//activeuser" in message.content:
+    globalenn = len(activenoww)
+    await message.channel.send(f"There are currently {globalenn} active user")
+    return
+  if "//snipe" in message.content:
+    channel = message.channel
+    try:
+     em = discord.Embed(title = f"Last deleted message in this channel:", description = snipe_message_content[channel.id],color = discord.Colour.red())
+     em.set_footer(text = f"This message was sent by {snipe_message_author[channel.id]}")
+     await message.channel.send(embed = em)
+     return
+    except:
+     await message.channel.send(f"There are no recently deleted messages in this channel")
+     return
+  if "//editsnipe" in message.content:
+    try:
+      channel = ctx.channel
+      em = discord.Embed(title = f"Last edited message in this channel:", description = f"from: {snipe_message_content_edit[channel.id]}\nto:{snipe_message_content_edit_after[channel.id]}",color = discord.Colour.red())
+      em.set_footer(text = f"This message was sent by {snipe_message_author_edit[channel.id]}")
+      await ctx.send(embed = em)
+    except:
+      await ctx.send(f"There are no recently edited messages in this channel")
+      return
+  if "ㅤ" in message.content:
+    MemeChannel = get(message.guild.channels, name = 'botito-meme')
+    if message.guild in activeguild:
+      if MemeChannel:
+        subreddit = reddit.subreddit("memes")
+        all_subs = []
+        new = subreddit.new(limit = 100)
+        for submission in new:
+          all_subs.append(submission)
+
+        random_subs = random.choice(all_subs)
+        name = random_subs.title
+        url = random_subs.url
+        author = random_subs.author
+        score = random_subs.score
+        comment = random_subs.num_comments
+        em = discord.Embed(title = f"{name}",description= f"Poster: {author}\nScore: {score} upvotes\nComments: {comment}\nUrl: https://www.reddit.com/r/memes/comments/{random_subs.id}", color = discord.Colour.red())
+        em.set_image(url = url)
+        Memechannel = get(message.guild.channels, name = 'botito-meme')
+        await Memechannel.send(f"ㅤ", embed=em)
+
+
+
+  if "ㅤ" in message.content:
+    if message.guild in activeguild:
+      Nsfwchannel = get(message.guild.channels, name = 'botito-nsfw')
+      if Nsfwchannel:
+        subred = ["hentai"]
+        subreddit = reddit.subreddit(random.choice(subred))
+        all_subs = []
+        new = subreddit.new(limit = 100)
+        for submission in new:
+          all_subs.append(submission)
+
+        random_subs = random.choice(all_subs)
+        name = random_subs.title
+        url = random_subs.url
+        author = random_subs.author
+        score = random_subs.score
+        comment = random_subs.num_comments
+        em = discord.Embed(title = f"{name}",description= f"Poster: {author}\nScore: {score} upvotes\nComments: {comment}\nUrl: https://www.reddit.com/r/memes/comments/{random_subs.id}", color = discord.Colour.red())
+        em.set_image(url = url)
+        await Nsfwchannel.send(f"ㅤ", embed=em)
+  if message.author.bot == True:
+    return
+                #MURA
+  if message.author == client.user:
+    return
+
+
+  badd  = f'{random.choice(bad)}\n {message.author.mention}\nMessage: ||{message.content}||'
+  baddenglish = f'{random.choice(badEnglish)}\n {message.author.mention}\nMessage: ||{message.content}||'   
+  deletebad = get(message.guild.roles, name = 'botito-badwords')
+
+
+  if deletebad:   
+    if 'puta' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(badd)
+      return
+
+    if 'gago' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(badd)
+      return
+
+
+    if 'fuck' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(baddenglish)
+      return
+
+    if 'tangina' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(badd)
+      return
+
+
+    if 'gago' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(badd)
+      return
+
+    if 'pakyu' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(badd)
+      return
+
+    if 'nigger' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(badd)
+      return
+
+    if 'nigga' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(badd)
+      return
+
+
+
+
+                 #BASTOS
+    if 'dick' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(baddenglish)
+      return
+
+    if 'vagina' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(baddenglish)
+      return
+
+    if 'pussy' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(baddenglish)
+      return
+     
+    if 'porn' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(baddenglish)
+      return
+
+    if 'dogstyle' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(baddenglish)
+      return
+  
+    if 'dog style' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(baddenglish)
+      return
+
+    if 'blowjob' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(baddenglish)
+      return
+
+    if 'blow job' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(baddenglish)
+      return
+
+    if 'puday' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(baddenglish)
+      return
+
+    if 'tite' in message.content:
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(badd)
+      return
+
+    if 'kantutan' in message.content:
+      if str(message.author) == "BOWRATH#9019":
+        await message.channel.send("ikuyo oniichan")
+        return
+      await message.delete()
+      asyncio.sleep(.3)
+      await message.channel.send(badd)
+      return
+
+
+  reply = get(message.guild.roles, name = 'botito-reply')
+  if reply: 
+    if message.content.startswith("help"):
+      await message.channel.send("Type //help to help yourself")
+      return
+    if 'haha' in message.content:
+      details = (f"message.author,message.guild")
+      if details in haha:
+        return
+      time.sleep(1)
+      await message.channel.send(random.choice(komedya))
+      haha.append(details)
+      return
+    if message.content.startswith("hello"):
+      if message.guild in greet:
+        return
+      time.sleep(1)
+      await message.channel.send(random.choice(greet_english))
+      greet.append(message.guild)
+    if message.content.startswith("hi"):
+      if message.guild in greet:
+        return
+      time.sleep(1)
+      await message.channel.send(random.choice(greet_english))  
+      greet.append(message.guild)
+
+    if message.guild in activeguild:
+      if message.guild in active2guild:
+        return
+      active2guild.append(message.guild)
+      Memechannel = get(message.guild.channels, name = 'botito-meme')
+      Nsfwchannel = get(message.guild.channels, name = 'botito-nsfw')
+      await Memechannel.send(f"ㅤ")
+      await Nsfwchannel.send(f"ㅤ")
+      return
+
+  duplicatedmessage = f"1,{message.content}{message.author}{message.guild}{message.channel}" 
+  duplicatedmessage2 = f"2,{message.content}{message.author}{message.guild}{message.channel}"
+  duplicatedmessage3 = f"3,{message.content}{message.author}{message.guild}{message.channel}"
+  duplicatedmessage4 = f"4,{message.content}{message.author}{message.guild}{message.channel}"
+
+  antispam = get(message.guild.roles, name = 'botito-antispam')
+  if antispam:
+    if duplicatedmessage4 in msgsgs:
+      log = get(message.guild.channels, name = 'botito-logs')
+      await message.delete()
+      em = discord.Embed(color = discord.Colour.red(), title = (f"{message.author} is a potential spammer\nSpammed Message: {message.content}"))
+      em.timestamp = datetime.datetime.utcnow()
+      em.set_footer(text="Sorry if im wrong")
+      if message.author.id in spamauthor:
+        return
+      await log.send(embed = em)
+      await message.author.send(f"{message.author.mention}, You sent 5 or more idententical messages to #{message.channel},{message.guild} within the last 10 minutes and I detected it as a spam. Don't send a message similar to this for 10mins or it will be deleted. Sorry if im wrong. \nDuplicated Message: ```{message.content}```")
+      dels.append(f"message.content,message.author.id,message.guild.id")
+      spamauthor.append(message.author.id)
+      return
+    if duplicatedmessage3 in msgsgs:
+      msgsgs.append(f"4,{message.content}{message.author}{message.guild}{message.channel}") 
+      return
+    if duplicatedmessage2 in msgsgs:
+      msgsgs.append(f"3,{message.content}{message.author}{message.guild}{message.channel}") 
+      return
+    if duplicatedmessage in mess:
+      msgsgs.append(f"2,{message.content}{message.author}{message.guild}{message.channel}")
+      return
+    mess.append(f"1,{message.content}{message.author}{message.guild}{message.channel}")
+  
+
+                 #DATABASE
+welcomeMessage = [
+  'Hey! brush you teeth first before talking to',
+  'Welcome to',
+  "You got isekai'd to",
+  "Enjoy your time here in",
+  "Have a great time here in",
+  ""
+]
+komedya = [
+ "HAHAHAHHAHHA",
+ "HAHA",
+ "HAHAHHAHAHAHHAHA",
+ "HHAHAHAHHHAHAHA",
+ "HAHAHHAHAHHA",
+ "HHAHHAHHHHAHHA",
+]
+
+bad = [
+  '*Hoy bawal yan!*',
+  '*Gusto mo ban kita?*',
+]
+badEnglish = [
+  "*That's not nice to say you know*",
+  '*Do you want to be banned?*',
+  "Watch you mouth buddy",
+]
+greet_english = [
+  "hi",
+  "hello",
+  "hey babe",
+  "yoooo!",
+]
+
+keep_alive()
+TOKEN = os.environ['TOKEN']
+client.run(TOKEN)
