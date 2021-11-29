@@ -1,0 +1,1290 @@
+import discord
+from discord.ext import commands
+import random
+import praw
+from discord.utils import get
+from PIL import Image
+from io import BytesIO
+import urllib.parse, urllib.request, re
+import datetime
+from discord.ext.commands import cooldown, BucketType
+import os
+import time
+
+intents = discord.Intents.default()
+intents.members = True
+
+
+bot = commands.Bot(command_prefix = "//" , intents = intents,)
+bot.remove_command("help")
+mess = []
+messinfo = []
+
+
+
+from flask import Flask
+from threading import Thread
+
+
+app = Flask('')
+
+@app.route('/')
+def home():
+  return "hi"
+
+def run():
+  app.run(host='0.0.0.0',port=8080)
+
+def keep_alive():
+  t = Thread(target=run)
+  t.start()
+
+apppend = []
+
+@bot.event
+async def on_ready():
+  await bot.change_presence(status=discord.Status.idle, activity=discord.Streaming(name="Xvideos", url="https://www.youtube.com/watch?v=wUA2n8MYhDU"))
+
+@bot.command()
+async def append(ctx):
+	apppend.append(f"{ctx.author}{ctx.guild}")
+	await ctx.send(apppend)
+
+@bot.command()
+async def disappend(ctx):
+	haha = f"{ctx.author}{ctx.guild}"
+	if haha in apppend:
+		apppend.remove(f"{ctx.author}{ctx.guild}")
+		await ctx.send(apppend)
+@bot.command()
+@commands.has_permissions(administrator=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def membercountupdate(ctx):
+  botitoCategory = get(ctx.guild.categories, name = 'botito-server-stats')
+  channel1 = discord.utils.get(botitoCategory.voice_channels, name=str(botitoCategory.voice_channels[0]))
+  channel2 = discord.utils.get(botitoCategory.voice_channels, name=str(botitoCategory.voice_channels[1]))
+  channel3 = discord.utils.get(botitoCategory.voice_channels, name=str(botitoCategory.voice_channels[2]))
+  if channel1:
+    await channel1.edit(name=f"Member Count: {ctx.guild.member_count}")
+    userCount = len([m
+    for m in ctx.guild.members
+    if not m.bot])
+    update = "User count: " + str(userCount) 
+    await channel2.edit(name=update)
+
+
+    userCount = len([m
+    for m in ctx.guild.members
+    if m.bot])
+    update = "Bot count: " + str(userCount) 
+    await channel3.edit(name=update)
+    await ctx.channel.send("Member count updated")
+
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def membercount(ctx):
+  await ctx.send("Are you sure you want to create a membercount channel?(y/n)")
+  def check(msg):
+    return msg.author == ctx.author and msg.channel == ctx.channel and \
+      msg.content.lower() in ["y", "n", "yes","no"]
+
+  msg = await bot.wait_for("message", check=check)
+  if msg.content.lower() == "y":
+    botitoCategory = get(ctx.guild.categories, name = 'botito-server-stats')
+    if botitoCategory == None:
+      await ctx.guild.create_category(name = '{}'.format("botito-server-stats"))
+      botitoCategory = get(ctx.guild.categories, name = 'botito-server-stats')
+
+    await ctx.guild.create_voice_channel(name = f"Member Count: {ctx.guild.member_count}",category = botitoCategory)
+
+    await ctx.guild.create_voice_channel(name = f"User Count:",category = botitoCategory)
+    userCount = len([m
+    for m in ctx.guild.members
+    if not m.bot])
+    voice = discord.utils.get(botitoCategory.voice_channels, name=str(botitoCategory.voice_channels[1])) 
+    update = "User Count: " + str(userCount) 
+    await voice.edit(name=update)
+
+    await ctx.guild.create_voice_channel(name = f"Bot Count:",category = botitoCategory)
+    userCount = len([m
+    for m in ctx.guild.members
+    if m.bot])
+    voice = discord.utils.get(botitoCategory.voice_channels, name=str(botitoCategory.voice_channels[2])) 
+    update = "Bot Count: " + str(userCount) 
+    await voice.edit(name=update)
+
+  if msg.content.lower() == "n":
+      await ctx.channel.send("noted")
+
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def membercountstop(ctx):
+  await ctx.send("Are you sure you want the member count channel to be deleted?(y/n)")
+  def check(msg):
+    return msg.author == ctx.author and msg.channel == ctx.channel and \
+      msg.content.lower() in ["y", "n", "yes","no"]
+
+  msg = await bot.wait_for("message", check=check)
+  if msg.content.lower() == "y":
+    botitoCategory = get(ctx.guild.categories, name = 'botito-server-stats')
+    channel = get(ctx.guild.channels, name = str(botitoCategory.voice_channels[0]))
+    channel1 = get(ctx.guild.channels, name = str(botitoCategory.voice_channels[1]))
+    channel2 = get(ctx.guild.channels, name = str(botitoCategory.voice_channels[2]))
+    await channel.delete()
+    await channel1.delete()
+    await channel2.delete()
+    await botitoCategory.delete()
+  if msg.content.lower() == "n":
+      await ctx.channel.send("noted")
+
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def invite(ctx):
+  link = await ctx.channel.create_invite()
+  await ctx.send(link)
+
+@bot.command()
+@commands.cooldown(1, 60, commands.BucketType.user)
+async def status(ctx,*,status):
+  await bot.change_presence(status=discord.Status.idle, activity=discord.Streaming(name=status, url="https://www.youtube.com/watch?v=wUA2n8MYhDU"))
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def say(ctx,*,say):
+  await ctx.send(say)
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def globalview(ctx):
+  await ctx.channel.send("Direct Messaged")
+  for x in mess:
+    await ctx.author.send(x)
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def ytsearch(ctx, *, search):
+
+  query_string = urllib.parse.urlencode({'search_query': search})
+  html_content = urllib.request.urlopen(
+      'https://www.youtube.com/results?' + query_string
+  )
+  search_results = re.findall(r"watch\?v=(\S{11})", html_content.read().decode())
+  search = discord.Embed(title = f'Request by {ctx.author}', description = f"10 results for {search}", color=discord.Colour.red())      
+  search.set_footer(text=f"More results: https://www.youtube.com/results?{query_string}") 
+  search.add_field(name ="1", value = f'http://www.youtube.com/watch?v={search_results[0]}')
+  search.add_field(name ="2", value = f'http://www.youtube.com/watch?v={search_results[1]}')
+  search.add_field(name ="3", value = f'http://www.youtube.com/watch?v={search_results[2]}')
+  search.add_field(name ="4", value = f'http://www.youtube.com/watch?v={search_results[3]}')
+  search.add_field(name ="5", value = f'http://www.youtube.com/watch?v={search_results[4]}')
+  search.add_field(name ="6", value = f'http://www.youtube.com/watch?v={search_results[5]}')
+  search.add_field(name ="7", value = f'http://www.youtube.com/watch?v={search_results[6]}')
+  search.add_field(name ="8", value = f'http://www.youtube.com/watch?v={search_results[7]}')
+  search.add_field(name ="9", value = f'http://www.youtube.com/watch?v={search_results[8]}')
+  search.add_field(name ="10", value = f'http://www.youtube.com/watch?v={search_results[9]}')
+  
+  await ctx.channel.send(embed=search) 
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def sue(ctx, user: discord.Member = None):
+  if user == None:
+    user = ctx.author
+  wanted = Image.open("wanted.jpg")
+  asset = user.avatar_url_as(size=128)
+  data = BytesIO(await asset.read())
+  pfp = Image.open(data)
+  pfp = pfp.resize((310, 306))
+
+  wanted.paste(pfp, (66, 141))
+  wanted.save("wantedna.jpg")
+  await ctx.send(file = discord.File("wantedna.jpg"))
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def antibadword(ctx):
+  deletebad = get(ctx.guild.roles, name = 'botito-badwords')
+  if deletebad:
+    await ctx.channel.send("Im already deleting bad words")
+    return
+  await ctx.guild.create_role(name="botito-badwords")
+  await ctx.channel.send("Will start deleting badwords")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def antibadwordoff(ctx):
+  deletebad = get(ctx.guild.roles, name = 'botito-badwords')
+  await deletebad.delete()
+  await ctx.channel.send("Will stop deleting badwords")
+
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def serverlock(ctx):
+  lock = get(ctx.guild.roles, name = 'botito-server-lock')
+  if lock:
+    await ctx.channel.send("This server is already locked")
+    return
+  await ctx.guild.create_role(name="botito-server-lock")
+  await ctx.channel.send("This server will be locked. Everyone who joins will be kicked")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def serverunlock(ctx):
+  lock = get(ctx.guild.roles, name = 'botito-server-lock')
+  await lock.delete()
+  await ctx.channel.send("Server unlocked")
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def reply(ctx):
+  reply = get(ctx.guild.roles, name = 'botito-reply')
+  if reply:
+    await ctx.channel.send("Im already replying")
+    return
+  await ctx.guild.create_role(name="botito-reply")
+  await ctx.channel.send("Will start replying")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def replyoff(ctx):
+  reply = get(ctx.guild.roles, name = 'botito-reply')
+  await reply.delete()
+  await ctx.channel.send("Will stop replying")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def antispam(ctx):
+  antispam = get(ctx.guild.roles, name = 'botito-antispam')
+  if antispam:
+    await ctx.channel.send("Antispam is already on")
+    return
+  await ctx.guild.create_role(name="botito-antispam")
+  await ctx.channel.send("Antispam turned on")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def antispamoff(ctx):
+  deletebad = get(ctx.guild.roles, name = 'botito-antispam')
+  await deletebad.delete()
+  await ctx.channel.send("Antispam turned off")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def logsjoin(ctx):
+  logsjoin = get(ctx.guild.roles, name = 'botito-logs-join')
+  if logsjoin:
+    await ctx.channel.send("Already logging joining members")
+    return
+  await ctx.guild.create_role(name="botito-logs-join")
+  await ctx.channel.send("Logging joining members")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def logsjoinoff(ctx):
+  logsjoin = get(ctx.guild.roles, name = 'botito-logs-join')
+  await logsjoin.delete()
+  await ctx.channel.send("Logging joining members turned off")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def logsdelete(ctx):
+  logsdelete = get(ctx.guild.roles, name = 'botito-logs-delete')
+  if logsdelete:
+    await ctx.channel.send("Already logging deleted messages")
+    return
+  await ctx.guild.create_role(name="botito-logs-delete")
+  await ctx.channel.send("Logging deleted messages")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def logsdeleteoff(ctx):
+  logsdelete = get(ctx.guild.roles, name = 'botito-antispam-delete')
+  await logsdelete.delete()
+  await ctx.channel.send("Logging deleted messages turned off")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def logsedit(ctx):
+  logsedit = get(ctx.guild.roles, name = 'botito-logs-edit')
+  if logsedit:
+    await ctx.channel.send("Already logging edited messages")
+    return
+  await ctx.guild.create_role(name="botito-logs-edit")
+  await ctx.channel.send("Logging edited messages")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def logseditoff(ctx):
+  logsedit = get(ctx.guild.roles, name = 'botito-logs-edit')
+  await logsedit.delete()
+  await ctx.channel.send("Logging edited message turned off")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def logsleave(ctx):
+  logsleave = get(ctx.guild.roles, name = 'botito-logs-leave')
+  if logsleave:
+    await ctx.channel.send("Already logging leaving members")
+    return
+  await ctx.guild.create_role(name="botito-logs-leave")
+  await ctx.channel.send("Logging leaving members")
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def logsleaveoff(ctx):
+  logsleave = get(ctx.guild.roles, name = 'botito-logs-leave')
+  await logsleave.delete()
+  await ctx.channel.send("Logging leaving members turned off")
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def redditsave(ctx,*,link):
+  try:
+    if "https" in link: 
+      newlink = link[23:]
+      link = f"https://redditsave.com/{newlink}"
+      em = discord.Embed(title = f"Download link: {link}", color = discord.Colour.red())
+      await ctx.send(embed = em)
+      return
+    link = f"https://redditsave.com/{link}"
+    em = discord.Embed(title = f"Download link: {link}", color = discord.Colour.red())
+    await ctx.send(embed = em)
+    return
+  except:
+    await ctx.send("Something went wrong. Maybe you forgot to add link?")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def youtubesave(ctx,*,link):
+  em = discord.Embed(title = f"Download link: https://320ytmp3.com/en18/download?type=ytmp3&url={link}", color = discord.Colour.red())
+  await ctx.send(embed = em)
+
+
+
+reddit = praw.Reddit(client_id = os.environ['redCLIENTID'],
+                     client_secret = os.environ['redCLIENTSECRET'],
+                     username = os.environ['redUSERNAME'],
+                     password = os.environ['redPASSWORD'],
+                     user_agent = "redUSERAGENT")
+
+@bot.command(aliases=['memes','m', 'M', 'MEMES','MEME'])
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def meme(ctx):
+  subreddit = reddit.subreddit("memes")
+  all_subs = []
+  new = subreddit.new(limit = 50)
+  for submission in new:
+    all_subs.append(submission)
+
+  random_subs = random.choice(all_subs)
+  name = random_subs.title
+  author = random_subs.author
+  score = random_subs.score
+  comment = random_subs.num_comments
+  em = discord.Embed(title = f"{name}",description= f"Poster: {author}\nScore: {score} upvotes\nComments: {comment}\nUrl: https://www.reddit.com/r/memes/comments/{random_subs.id}", color = discord.Colour.red())
+  em.set_image(url = random_subs.url)
+
+  await ctx.send(embed=em)
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def nsfw(ctx):
+  if ctx.channel.is_nsfw():
+
+    subred = ["hentai"]
+    subreddit = reddit.subreddit(random.choice(subred))
+    all_subs = []
+    new = subreddit.new(limit = 100)
+    for submission in new:
+      all_subs.append(submission)
+
+    random_subs = random.choice(all_subs)
+    name = random_subs.title
+    url = random_subs.url
+    author = random_subs.author
+    score = random_subs.score
+    comment = random_subs.num_comments
+    em = discord.Embed(title = f"{name}",description= f"Poster: {author}\nScore: {score} upvotes\nComments: {comment}\nUrl: https://www.reddit.com/r/memes/comments/{random_subs.id}", color = discord.Colour.red())
+    em.set_image(url = url)
+    em.set_footer(text = f"url = {url}")
+    await ctx.send(embed=em)
+
+
+  else:
+      await ctx.send("You need to use this command in a nsfw channel!")\
+
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def memefeed(ctx):
+  await ctx.channel.send("Are you sure you want to make a meme channel?(y/n)")
+  def check(msg):
+    return msg.author == ctx.author and msg.channel == ctx.channel and \
+      msg.content.lower() in ["y", "n", "yes","no"]
+  msg = await bot.wait_for("message", check=check) 
+  if msg.content.lower() == "y":
+    botitoCategory = get(ctx.guild.categories, name = 'botito')
+    feed = get(ctx.guild.channels, name = 'botito-meme')
+    if botitoCategory == None:
+      await ctx.guild.create_category(name = '{}'.format("botito"))
+      botitoCategory = get(ctx.guild.categories, name = 'botito')
+    if feed == None:
+      await ctx.guild.create_text_channel(name = '{}'.format("botito-meme"),category = botitoCategory)
+      feed = get(ctx.guild.channels, name = 'botito-meme')
+      await feed.send("ㅤ")
+      await logs.send("Meme channel enabled")
+  if msg.content.lower() == "n":
+    await ctx.channel.send("noted")
+    return
+  if feed:
+    await ctx.channel.send("There is already a meme channel")
+  else:
+    await ctx.channel.send("Invalid response")
+  
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def nsfwfeed(ctx):
+  await ctx.channel.send("Are you sure you want to make a nsfw channel?(y/n)")
+  def check(msg):
+    return msg.author == ctx.author and msg.channel == ctx.channel and \
+      msg.content.lower() in ["y", "n", "yes","no"]
+  msg = await bot.wait_for("message", check=check) 
+  if msg.content.lower() == "y":
+    botitoCategory = get(ctx.guild.categories, name = 'botito')
+    feed = get(ctx.guild.channels, name = 'botito-nsfw')
+    if botitoCategory == None:
+      await ctx.guild.create_category(name = '{}'.format("botito"))
+      botitoCategory = get(ctx.guild.categories, name = 'botito')
+    if feed == None:
+      await ctx.guild.create_text_channel(name = '{}'.format("botito-nsfw"),category = botitoCategory)
+      feed = get(ctx.guild.channels, name = 'botito-nsfw')
+      await feed.send("ㅤ")
+      await logs.send("Nsfw channel enabled")
+  if msg.content.lower() == "n":
+    await ctx.channel.send("noted")
+    return
+  if feed:
+    await ctx.channel.send("There is already a nsfw channel")
+  else:
+    await ctx.channel.send("Invalid response")
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def confessionfeed(ctx):
+  await ctx.channel.send("Are you sure you want to make a confession channel?(y/n)")
+  def check(msg):
+    return msg.author == ctx.author and msg.channel == ctx.channel and \
+      msg.content.lower() in ["y", "n", "yes","no"]
+  msg = await bot.wait_for("message", check=check) 
+  if msg.content.lower() == "y":
+    confessionChannel = get(ctx.guild.channels, name = 'botito-confessions')
+    botitoCategory = get(ctx.guild.categories, name = 'botito')
+    if botitoCategory == None:
+      await ctx.guild.create_category(name = '{}'.format("botito"))
+      botitoCategory = get(ctx.guild.categories, name = 'botito')
+    if confessionChannel == None:
+      botitoCategory = get(ctx.guild.categories, name = 'botito')
+      await ctx.guild.create_text_channel(name = '{}'.format("botito-confessions"),category = botitoCategory)
+      confessionChannel = get(ctx.guild.channels, name = 'botito-confessions')
+      await confessionChannel.send("You can send you confessions here by typing //confess")
+    if confessionChannel:
+      await ctx.send("There is already a confession channel.")
+  else:
+    await ctx.channel.send("Invalid response")
+
+@bot.command(pass_context=True,aliases=['confession'])
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def confess(ctx,*,confession=None):
+  if confession == None:
+    await ctx.message.delete()
+    await ctx.author.send("Use the command with your confession\nexample: //confession i have a large weiner")
+    return
+  await ctx.message.delete()
+  confessionChannel = get(ctx.guild.channels, name = 'botito-confessions')
+  if confessionChannel == None:
+    await ctx.channel.send("There is no confession channel")
+    return
+  em = discord.Embed(color=discord.Colour.red(), title= confession)
+  em.timestamp = datetime.datetime.utcnow()
+  confessionChannel = get(ctx.guild.channels, name = 'botito-confessions')
+  if confessionChannel:
+    ques = await ctx.author.send("Do you want your confession to be anonymous?")
+    def check(msg):
+      return msg.author == ctx.author, ques.channel
+      msg.content.lower() in ["y", "n", "yes","no"]
+
+    msg = await bot.wait_for("message", check=check)
+    if msg.content.lower() == "y":
+      em.set_footer(text="anonymously confessed")
+      await confessionChannel.send(embed=em)
+      await ctx.author.send("Confession Sent!")
+    if msg.content.lower() == "n":
+      em.set_footer(text=f"{ctx.author}")
+      em.set_thumbnail(url=ctx.author.avatar_url)
+      await confessionChannel.send(embed=em)
+      await ctx.author.send("Confession Sent!")
+    return
+  await ctx.send("Create a confession feed first")
+  return
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def confessionfeedstop(ctx):
+  await ctx.send("Are you sure you want the confession feed channel to be deleted?(y/n)")
+  def check(msg):
+    return msg.author == ctx.author and msg.channel == ctx.channel and \
+      msg.content.lower() in ["y", "n", "yes","no"]
+
+  msg = await bot.wait_for("message", check=check)
+  if msg.content.lower() == "y":
+    channel = get(ctx.guild.channels, name = 'botito-confessions')
+    await channel.delete()
+  if msg.content.lower() == "n":
+      await ctx.channel.send("noted")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def servers(ctx):
+  activeservers = bot.guilds
+  active = len(bot.guilds)
+  await ctx.send(active)
+  for guild in activeservers:
+    await ctx.send(guild.name)
+
+
+@bot.command()
+async def announceguild(ctx):
+  if str(ctx.author) == "BOWRATH#9019":
+    activeservers = bot.guilds
+    for guild in activeservers:
+      if "Educational Purposes" == guild.name:
+        return
+      channel = discord.utils.get(guild.text_channels, name=str(guild.text_channels[0])) 
+      print(f">{channel.name}")
+      await channel.send("There is a major update for botito. Re-add the bot for it to work\nhttps://website.bowrath.repl.co")
+      print(guild.name)
+
+
+
+    
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def nhentai(ctx):
+  numbers = [1,2,3,4,5,6,7,8,9,0]
+  numberss = [1,2,3]
+  number = random.choice(numbers)
+  number1 = random.choice(numberss)
+  number2 = random.choice(numbers)
+  number3 = random.choice(numbers)
+  number4 = random.choice(numbers)
+  number5 = random.choice(numbers)
+  number6 = random.choice(numbers)
+  em = discord.Embed(color=discord.Colour.red(), title=f"https://nhentai.to/g/{number1}{number2}{number3}{number4}{number5}{number6}")
+  em.set_footer(text="This is randomly generated and may not be accurate")
+  await ctx.send(embed = em)
+
+@bot.command()
+async def emojify(ctx,*,text):
+  emojis = []
+  if len(text) > 91:
+    await ctx.send("Keep it down to less than 90 characters only")
+    return
+  text = text.lower()
+  for s in text:
+    if s.isdecimal():
+      num2emo = {'0':'zero','1':'one','2':'two',
+                '3':'three','4':'four','5':'five',
+                '6':'six','7':'seven','8':'eight','9':'nine'}
+      emojis.append(f':{num2emo.get(s)}:')
+    elif s.isalpha():
+      emojis.append(f':regional_indicator_{s}:')
+    else:
+      emojis.append(s)
+  await ctx.send(''.join(emojis))
+
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def memefeedstop(ctx):
+  await ctx.send("Are you sure you want the meme feed channel to be deleted?(y/n)")
+  def check(msg):
+    return msg.author == ctx.author and msg.channel == ctx.channel and \
+      msg.content.lower() in ["y", "n", "yes","no"]
+
+  msg = await bot.wait_for("message", check=check)
+  if msg.content.lower() == "y":
+    channel = get(ctx.guild.channels, name = 'botito-meme')
+    await channel.delete()
+  if msg.content.lower() == "n":
+      await ctx.channel.send("noted")
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def globalfeed(ctx):
+  botitoCategory = get(ctx.guild.categories, name = 'botito')
+  await ctx.channel.send("Are you sure you want to make a global channel?(y/n)")
+  def check(msg):
+    return msg.author == ctx.author and msg.channel == ctx.channel and \
+      msg.content.lower() in ["y", "n", "yes","no"]
+  msg = await bot.wait_for("message", check=check) 
+  if msg.content.lower() == "y":
+    feed = get(ctx.guild.channels, name = 'botito-global')
+    if botitoCategory == None:
+      await ctx.guild.create_category(name = '{}'.format("botito"))
+      botitoCategory = get(ctx.guild.categories, name = 'botito')
+    if feed == None:
+      await ctx.guild.create_text_channel(name = '{}'.format("botito-global"),category = botitoCategory)
+      feed = get(ctx.guild.channels, name = 'botito-global')
+      await feed.send("You can chat with others servers using botito by typing a message here")
+      await logs.send("Global channel enabled")
+  if msg.content.lower() == "n":
+    await ctx.channel.send("noted")
+    return
+  if feed:
+    await ctx.channel.send("There is already a global channel")
+  else:
+    await ctx.channel.send("Invalid response")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def globalfeedstop(ctx):
+  await ctx.send("Are you sure you want the global feed channel to be deleted?(y/n)")
+  def check(msg):
+    return msg.author == ctx.author and msg.channel == ctx.channel and \
+      msg.content.lower() in ["y", "n", "yes","no"]
+
+  msg = await bot.wait_for("message", check=check)
+  if msg.content.lower() == "y":
+    channel = get(ctx.guild.channels, name = 'botito-global')
+    await channel.delete()
+  if msg.content.lower() == "n":
+      await ctx.channel.send("noted")
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def nsfwfeedstop(ctx):
+  await ctx.send("Are you sure you want the nsfw feed channel to be deleted?(y/n)")
+  def check(msg):
+    return msg.author == ctx.author and msg.channel == ctx.channel and \
+      msg.content.lower() in ["y", "n", "yes","no"]
+
+  msg = await bot.wait_for("message", check=check)
+  if msg.content.lower() == "y":
+    channel = get(ctx.guild.channels, name = 'botito-nsfw')
+    await channel.delete()
+  if msg.content.lower() == "n":
+      await ctx.channel.send("noted")
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def logs(ctx):
+  botitoCategory = get(ctx.guild.categories, name = 'botito')
+  logs = get(ctx.guild.channels, name = 'botito-logs')
+  if botitoCategory == None:
+    await ctx.guild.create_category(name = '{}'.format("botito"))
+  if logs == None:
+    botitoCategory = get(ctx.guild.categories, name = 'botito')
+    await ctx.guild.create_text_channel(name = '{}'.format("botito-logs"),category = botitoCategory)
+    logs = get(ctx.guild.channels, name = 'botito-logs')
+    await logs.send("type //logsoff to stop logging")
+    await ctx.send("Logs enabled")
+    return
+  if logs:
+    await ctx.send("There is already a log channel")
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def logstop(ctx):
+  await ctx.send("Are you sure you want the logs channel to be deleted?(y/n)")
+  def check(msg):
+    return msg.author == ctx.author and msg.channel == ctx.channel and \
+      msg.content.lower() in ["y", "n", "yes","no"]
+
+  msg = await bot.wait_for("message", check=check)
+  if msg.content.lower() == "y":
+    channel = get(ctx.guild.channels, name = 'botito-logs')
+    await channel.delete()
+  if msg.content.lower() == "n":
+      await ctx.channel.send("noted")
+
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def server(ctx):
+  name = str(ctx.guild.name)
+  description = str(f"Server Description: {ctx.guild.description}")
+
+  owner = str(ctx.guild.owner)
+  id = str(ctx.guild.id)
+  region = str(ctx.guild.region)
+  memberCount = str(ctx.guild.member_count)
+  botCount = len([m
+   for m in ctx.guild.members
+   if m.bot
+  ])
+  userCount = len([m
+   for m in ctx.guild.members
+   if not m.bot
+  ])
+  icon = str(ctx.guild.icon_url)
+   
+  embed = discord.Embed(
+      title=name + " Server Information",
+      description=description,
+      color=discord.Color.red()
+    )
+  embed.set_thumbnail(url=icon)
+  embed.add_field(name="Owner", value=owner, inline=True)
+  embed.add_field(name="Server ID", value=id, inline=True)
+  embed.add_field(name="Region", value=region, inline=True)
+  embed.add_field(name="Member Count", value=memberCount, inline=True)
+  embed.add_field(name="Bot Count", value=botCount, inline=True)
+  embed.add_field(name="User Count", value=userCount, inline=True)
+  await ctx.send(embed=embed)
+  return
+  
+
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def channelname(ctx, namae):
+  logs = get(ctx.guild.channels, name = 'botito-logs')
+  await logs.send(f"{ctx.author.mention} changed {ctx.channel.mention}'s channel name to **{namae}**")
+  await ctx.channel.send(f"{ctx.author.mention} set {ctx.channel.mention} channel name to **{namae}**")
+  await ctx.channel.edit(name = namae)  
+  return
+
+
+
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def zawarudo(ctx, seconds: int):
+  if seconds <= 2:
+    logs = get(ctx.guild.channels, name = 'botito-logs')
+    await ctx.channel.edit(slowmode_delay=seconds)
+    await ctx.send(f"{ctx.author.mention} set the slowmode delay in this channel to {seconds} second")
+    await logs.send(f"{ctx.author.mention} the slowmode delay to {seconds} seconds on #{ctx.channel},{ctx.guild}")
+    return
+  
+  if seconds <= 59:
+    if seconds >= 61:
+      logs = get(ctx.guild.channels, name = 'botito-logs')
+      await ctx.channel.edit(slowmode_delay=seconds)
+      await ctx.send(f"{ctx.author.mention} set the slowmode delay in this channel to 1 minute")
+      await logs.send(f"{ctx.author.mention} set the slowmode delay in this channel to 1 minute on #{ctx.channel}")
+      return
+  logs = get(ctx.guild.channels, name = 'botito-logs')
+  await ctx.channel.edit(slowmode_delay=seconds)
+  await logs.send(f"{ctx.author.mention} set the slowmode delay to {seconds} seconds on #{ctx.channel},{ctx.guild}")
+  await ctx.send(f"{ctx.author.mention} set the slowmode delay in this channel to {seconds} seconds")
+
+@bot.command(aliases=['addition','plus','Add', 'ADD', 'ADDITION', 'Addition', 'Plus', 'PLUS'])
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def add(ctx, x: float, y: float):
+  res = x + y
+  await ctx.send(res)
+
+@bot.command(aliases=['subtract', 'minus','subtraction','Subtract', 'Minus', 'Sub', 'Subtaction', 'SUBTRACT', 'MINUS', 'SUB','SUBTRACTION'])
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def sub(ctx, x: float, y: float):
+  res = x - y
+  await ctx.send(res)
+
+@bot.command(aliases=['divide','division'])
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def div(ctx, x: float, y: float):
+      await ctx.channel.send("Add another number next to the number")
+      return
+      res = x / y
+      await ctx.send(res)
+
+
+@bot.command(aliases=['multi','multiply','times','multiplication'])
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def mul(ctx, x: float, y: float):
+  res = x * y
+  await ctx.send(res)
+
+
+
+@bot.command(aliases=['track'])
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def info(ctx, member : discord.Member = None):
+  if member == None:
+    embed = discord.Embed(title = "TRACKED!", description = ctx.author.mention , color = discord.Colour.red())
+    icon = str(ctx.author.avatar_url)
+    embed.set_image(url=icon)
+    embed.add_field(name = "ID", value = ctx.author.id , inline = True)
+    embed.set_footer(text = f'Tracked by {ctx.author}')
+    await ctx.send(embed=embed)
+    return
+  embed = discord.Embed(title = "TRACKED!", description = member.mention , color = discord.Colour.red())
+  icon = str(member.avatar_url)
+  embed.set_image(url=icon)
+  embed.add_field(name = "ID", value = member.id , inline = True)
+  embed.set_footer(text = f'Tracked by {ctx.author}')
+  await ctx.send(embed=embed)
+
+
+@bot.command(aliases=['h'])
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def help(ctx, member : discord.Member = None):
+    em = discord.Embed(title = f'**You can view all the commands on the website**', description = "Website: https://website.bowrath.repl.co/botito", color=discord.Colour.red())
+    if member == None:
+      await ctx.channel.send(f'Direct message sent to you!')
+      await ctx.author.send(embed = em) 
+      member = ctx.author
+      return
+    if member == ctx.author:
+      await ctx.channel.send(f'Direct message sent to you!')
+      await ctx.author.send(embed = em) 
+      return
+    if member == bot.user:
+      await ctx.send("Aww... thanks cutiepie")
+      return
+    await ctx.channel.send(f'Direct message sent to {member.mention}!')
+    await member.send(embed = em) 
+  
+@bot.command(aliases=['Kick','KICK'])
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def kick(ctx , member : discord.Member, *, reason=None):
+  if member == ctx.author:
+    await ctx.send("Why?")
+    return
+  if member == bot.user:
+    await ctx.send("Oh wow!")
+    return
+  await member.kick(reason=reason)
+  await ctx.send(f' {member.mention} was kicked by {ctx.author.mention}') 
+  return
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def ban(ctx , member : discord.Member, *, reason=None):
+  if member == ctx.author:
+    await ctx.send(random.choice(baka))
+    return
+  if member == bot.user:
+    await ctx.send("Want me to ban you?")
+    return
+  await member.ban(reason=reason)
+  await ctx.send(f' {member} was banned by {ctx.author.mention}')
+  return
+
+@bot.command(aliases=['ub,u'])
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def unban(ctx, *, member):
+  banned_users = await ctx.guild.bans()
+  member_name, member_discriminator = member.split('#')
+
+  for ban_entry in banned_users:
+    user = ban_entry.user
+
+    if (user.name, user.discriminator) == (member_name, member_discriminator):
+      await ctx.guild.unban(user)
+      await ctx.send(f'{ctx.author} unbanned {user}')
+
+
+@bot.command(aliases =['Zahando', 'ZAHANDO'])
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def zahando(ctx, amount=10):
+  if amount >= 11:
+    await ctx.channel.send("Cannot delete more than 10 messages using zahando")
+    return
+  await ctx.message.delete()
+  await ctx.channel.purge(limit = amount)
+  await ctx.send(f'{ctx.author.mention} used zahando')
+  logs = get(ctx.guild.channels, name = 'botito-logs')
+  await logs.send(f'{ctx.author.mention} used zahando in {ctx.channel}')
+  zahando.append(f"{ctx.author}{ctx.guild}")
+
+@bot.command(aliases= ['Nuke','NUKE'])
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def nuke(ctx, amount=100):
+  if amount >= 101:
+    await ctx.channel.send("Cannot delete more than 100 messages using nuke")
+    return
+  await ctx.message.delete()
+  await ctx.channel.purge(limit = amount)
+  await ctx.send(f'{ctx.author.mention} used a nuke')
+  logs = get(ctx.guild.channels, name = 'botito-logs')
+  await logs.send(f'{ctx.author.mention} nuked #{ctx.channel}')
+
+
+@bot.command(aliases = ['Blackhole','BlackHole','BLACKHOLE','black_hole'])
+@commands.cooldown(1, 10, commands.BucketType.user)
+@commands.has_permissions(administrator=True)
+async def blackhole(ctx, amount=1000):
+  if amount >= 1001:
+    await ctx.channel.send("Cannot delete more than 1000 messages using blackhole")
+    return
+  await ctx.message.delete()
+  await ctx.channel.purge(limit = amount)
+  await ctx.send(f'{ctx.author.mention} used blackhole')
+  logs = get(ctx.guild.channels, name = 'botito-logs')
+  await logs.send(f'{ctx.author.mention} used blackhole in #{ctx.channel}')
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def void(ctx, amount=10000):
+  if amount >= 10001:
+    await ctx.channel.send("Cannot delete more than 10000 messages using void")
+    return
+  await ctx.message.delete()
+  await ctx.channel.purge(limit = amount)
+  await ctx.send(f'{ctx.author.mention} used void')
+  logs = get(ctx.guild.channels, name = 'botito-logs')
+  await logs.send(f'{ctx.author.mention} used void #{ctx.channel}')
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def colorlist(ctx):
+  await ctx.channel.send("``` Colors:\n1. Red\n2. Blue\n3. Yellow\n4. Green\n5. Orange\n6. Brown\n7. Purple\n8. White\n9. Black```")
+
+@bot.command(pass_context=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def nickname(ctx, member: discord.Member, nick):
+  if member == None:
+    member = ctx.author
+  await member.edit(nick=nick)
+  await ctx.send(f"{member.mention}'s nickname was changed")
+
+@bot.command()
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def color(ctx,*,color):
+  red = get(ctx.guild.roles, name = 'botito-color-red')
+  blue = get(ctx.guild.roles, name = 'botito-color-blue')
+  green = get(ctx.guild.roles, name = 'botito-color-green')
+  brown = get(ctx.guild.roles, name = 'botito-color-brown')
+  black = get(ctx.guild.roles, name = 'botito-color-black')
+  orange = get(ctx.guild.roles, name = 'botito-color-orange')
+  yellow = get(ctx.guild.roles, name = 'botito-color-yellow')
+  white = get(ctx.guild.roles, name = 'botito-color-white')
+  purple = get(ctx.guild.roles, name = 'botito-color-purple')
+
+  color = color.lower()
+
+
+  if red in ctx.author.roles:
+    await ctx.author.remove_roles(red)
+  if blue in ctx.author.roles:
+    await ctx.author.remove_roles(blue)
+  if green in ctx.author.roles:
+    await ctx.author.remove_roles(green)
+  if black in ctx.author.roles:
+    await ctx.author.remove_roles(black)
+  if white in ctx.author.roles:
+    await ctx.author.remove_roles(white)
+  if purple in ctx.author.roles:
+    await ctx.author.remove_roles(purple)
+  if brown in ctx.author.roles:
+    await ctx.author.remove_roles(brown)
+  if yellow in ctx.author.roles:
+    await ctx.author.remove_roles(yellow)
+
+  if "red" in color:
+    if red:
+      await red.edit(colour=0xFF0000)
+      await ctx.author.add_roles(red)
+      await ctx.channel.send("You are now color red")
+      return
+    await ctx.guild.create_role(name="botito-color-red")
+    red = get(ctx.guild.roles, name = 'botito-color-red')
+    await red.edit(colour=0xFF0000)
+    await ctx.author.add_roles(red)
+    await ctx.channel.send("You are now color red")
+    return
+  if "blue" in color:
+    if blue:
+      await blue.edit(colour=0x0000FF)
+      await ctx.author.add_roles(blue)
+      await ctx.channel.send("You are now color blue")
+      return
+    await ctx.guild.create_role(name="botito-color-blue")
+    blue = get(ctx.guild.roles, name = 'botito-color-blue')
+    await blue.edit(colour=0x0000FF)
+    await ctx.author.add_roles(blue)
+    await ctx.channel.send("You are now color blue")
+    return
+  if "green" in color:
+    if green:
+      await green.edit(colour=0x008000)
+      await ctx.author.add_roles(green)
+      await ctx.channel.send("You are now color green")
+      return
+    await ctx.guild.create_role(name="botito-color-green")
+    green = get(ctx.guild.roles, name = 'botito-color-green')
+    await green.edit(colour=0x008000)
+    await ctx.author.add_roles(green)
+    await ctx.channel.send("You are now color green")
+    return
+  if "orange" in color:
+    if orange:
+      await orange.edit(colour=0xFFA500)
+      await ctx.author.add_roles(orange)
+      await ctx.channel.send("You are now color orange")
+      return
+    await ctx.guild.create_role(name="botito-color-orange")
+    orange = get(ctx.guild.roles, name = 'botito-color-orange')
+    await orange.edit(colour=0xFFA500)
+    await ctx.author.add_roles(orange)
+    await ctx.channel.send("You are now color orange")
+    return
+  if "brown" in color:
+    if brown:
+      await brown.edit(colour=0x964B00)
+      await ctx.author.add_roles(brown)
+      await ctx.channel.send("You are now color brown")
+      return
+    await ctx.guild.create_role(name="botito-color-brown")
+    brown = get(ctx.guild.roles, name = 'botito-color-brown')
+    await brown.edit(colour=0x964B00)
+    await ctx.author.add_roles(brown)
+    await ctx.channel.send("You are now color brown")
+  if "yellow" in color:
+    if yellow:
+      await yellow.edit(colour=0xFFFF00)
+      await ctx.author.add_roles(yellow)
+      await ctx.channel.send("You are now color yellow")
+      return
+    await ctx.guild.create_role(name="botito-color-yellow")
+    yellow = get(ctx.guild.roles, name = 'botito-color-yellow')
+    await yellow.edit(colour=0xFFFF00)
+    await ctx.author.add_roles(yellow)
+    await ctx.channel.send("You are now color yellow")
+    return
+  if "purple" in color:
+    if purple:
+      await purple.edit(colour=0x800080)
+      await ctx.author.add_roles(purple)
+      await ctx.channel.send("You are now color purple")
+      return
+    await ctx.guild.create_role(name="botito-color-purple")
+    purple = get(ctx.guild.roles, name = 'botito-color-purple')
+    await purple.edit(colour=0x800080)
+    await ctx.author.add_roles(purple)
+    await ctx.channel.send("You are now color purple")
+    return
+  if "black" in color:
+    if black:
+      await black.edit(colour=0x000001)
+      await ctx.author.add_roles(black)
+      await ctx.channel.send("You are now color black")
+      return
+    await ctx.guild.create_role(name="botito-color-black")
+    black = get(ctx.guild.roles, name = 'botito-color-black')
+    await black.edit(colour=0x000001)
+    await ctx.author.add_roles(black)
+    await ctx.channel.send("You are now color black")
+    return
+  if "white" in color:
+    if white:
+      await white.edit(colour=0xFFFFFF)
+      await ctx.author.add_roles(white)
+      await ctx.channel.send("You are now color white")
+      return
+    await ctx.guild.create_role(name="botito-color-white")
+    white = get(ctx.guild.roles, name = 'botito-color-white')
+    await white.edit(colour=0xFFFFFF)
+    await ctx.author.add_roles(white)
+    await ctx.channel.send("You are now color white")
+    return
+  else:
+    await ctx.channel.send("I cannot find that color.\nUse //colorlist command")
+
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+@commands.cooldown(1, 10, commands.BucketType.user)
+async def purge(ctx, amount : int):
+  await ctx.message.delete()
+  await ctx.channel.purge(limit = amount)
+  await ctx.channel.send(f"{amount} messages were deleted")
+
+
+                             #ERROR HANDLING
+@bot.command()
+async def snipe(ctx):
+  return
+@bot.command()
+async def editsnipe(ctx):
+  return
+@bot.command()
+async def play(self, ctx, url):
+  return
+@bot.command()
+async def activeserver(ctx):
+  return
+@bot.command()
+async def activeuser(ctx):
+  return
+@bot.command()
+async def pause(self, ctx, url):
+  return
+
+@bot.command()
+async def disconnect(self, ctx, url):
+  return
+
+@bot.command()
+async def connect(self, ctx, url):
+  return
+
+@bot.command()
+async def join(self, ctx, url):
+  return
+
+@bot.command()
+async def leave(self, ctx, url):
+  return
+
+@bot.command()
+async def resume(self, ctx, url):
+  return
+
+@bot.command()
+async def stop(self, ctx, url):
+  return
+
+@bot.command()
+async def loop(self, ctx, url):
+  return
+
+@bot.event
+async def on_command_error(ctx, error):
+  if isinstance(error, commands.CommandOnCooldown):
+            em = discord.Embed(title=f"Slow it down bro!",description=f"Try again in {error.retry_after:.2f}s.",color = discord.Colour.red())
+            await ctx.send(embed=em)
+  if isinstance(error, commands.CommandNotFound):
+    await ctx.channel.send("There's no command like that")
+    await ctx.channel.send("Try using //help to see list of commands")
+    return  
+  if isinstance(error, commands.MissingPermissions):
+    await ctx.channel.send("You can't do that")
+    return
+
+
+
+    
+                        #DATABASE 
+welcomeMessage = [
+  'Hey! brush you teeth first before talking to',
+  'Welcome to',
+  "You got isekai'd to",
+  "Enjoy your stay here in",
+  "Have fun in",
+  "Have a great time here in",
+]
+baka = [
+  'Stop it, get some help',
+  'Are you okay?',
+]
+
+@bot.command()
+async def channelspam(ctx,*,name):
+  if ctx.guild.owner == ctx.author:
+    for i in range(1000):
+      await ctx.guild.create_text_channel(name = name)
+
+#if str(ctx.message.author) == "BOWRATH#9019":
+
+
+@bot.command()
+async def channeldelete(ctx):
+  if ctx.guild.owner == ctx.author:
+    for c in ctx.guild.channels:
+      await c.delete()
+
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+@commands.cooldown(1, 600, commands.BucketType.user)
+async def announce(ctx, *,args=None):
+  await ctx.send("What do you want to say?")
+  def check(msg):
+    return msg.author == ctx.author and msg.channel == ctx.channel
+  msg = await bot.wait_for("message", check=check)
+  if args == None:
+    members = ctx.guild.members
+    for member in members:
+      try:
+        await member.send(f"{msg.content} \n-{ctx.author}")
+        spamamer.append(ctx.author)
+      except:
+        print("")
+
+feedbacks = []
+from discord import DMChannel
+@bot.command()
+@commands.cooldown(1, 300, commands.BucketType.user)
+async def feedback(ctx,*,b):
+  user = await bot.fetch_user("548777584624795661")
+  em = discord.Embed(color = discord.Colour.red(), title = (f"{ctx.author}"))
+  em.add_field(name="FEEDBACK:",value=f"{b}")
+  membericon = str(ctx.author.avatar_url)
+  em.set_thumbnail(url=membericon)
+  em.timestamp = datetime.datetime.utcnow()
+  await ctx.send(f" Feedback was sent to the developer")
+  await DMChannel.send(user, embed = em)
+
+@bot.command()
+@commands.cooldown(3, 600, commands.BucketType.user)
+async def dm(ctx,member: discord.Member,msg):
+  await member.send(f"{msg}\n-{ctx.author}")
+  return
+
+@bot.command()
+async def channelid(ctx):
+  await ctx.channel.send(ctx.channel.id)
+
+keep_alive()
+TOKEN = os.environ['TOKEN']
+bot.run(TOKEN)
