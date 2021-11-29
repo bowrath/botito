@@ -1,0 +1,57 @@
+import discord
+from discord.ext import commands
+from keep_alive import keep_alive
+intents = discord.Intents.default()
+intents.members = True
+from discord import DMChannel
+
+from discord.utils import get
+client = commands.Bot(command_prefix="//", intents = intents)
+client.remove_command("help")
+
+messinfo = []
+globalmessage = []
+activeguild = []
+globalchannel = []
+botitomessage = []
+
+@client.event
+async def on_message(message):
+  if message.author == client.user:
+    return
+  message.content = message.content.lower()
+  globall = get(message.guild.channels,name='botito-global')
+  if message.channel.id is not globalchannel:
+    globalchannel.append(message.channel.id)
+  if f"{message.content}{message.channel.id}" in messinfo:
+    await message.delete()
+    return
+  if "//" in message.content:
+    return
+  if message.channel == globall:
+    if message.author == client.user:
+      return
+    for channel in globalchannel:
+      user = await client.fetch_channel(channel)
+      try:
+        await DMChannel.send(user,f"{message.author} in {message.guild}:```{message.content}```")
+        activeguild.append(message.guild.id)
+        messinfo.append(f"{message.content}{message.channel.id}")
+      except:
+        print("not working")
+        return
+
+  
+  
+  return
+
+
+
+
+
+
+
+import os
+keep_alive()
+TOKEN = os.environ['TOKEN']
+client.run(TOKEN)
