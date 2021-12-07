@@ -13,30 +13,6 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import db
 
-
-
-
-hiii = {
-  "type": "service_account",
-  "project_id": "botito-97706",
-  "private_key_id": "153fc26bf00e85b19949cf48542cb1d39e034028",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDCbhFWJ9dg+DNc\nenp5dhDiobriOXKzPfCAnKtrygPY5nTzgawcuNw9fdt6g0d5bXPLtLKNYGalVCW0\nM/dDxjsDpizBmi6DwAE/0Q2Bh8OOlcRMnQxNE0971taSeTQkQpKxD2NB5SZV1BHC\ngX3vEyL9B7Wd+NjHAvl0AdRyphRalvXJZB6Kdppu+gBfcDPypO+cjeW1nNtkwWJ6\n1ifJuksQ59CIGMYUSxUbhAQ2reegtQmnM/Lyslfy6Y3mHtfbT7oz1KdeMCsfT8sW\nLqOyuvOO1LDJ+skqq/6XHIKGrfsOUdpyLH5/LtG3qCGRXDU6OLelnM2X77zSNr2J\nlIj6jmx9AgMBAAECggEAKuACyrD2edfB277WizpR9ugbQg/RD121T2c9FgPyXT5U\nw+3welT5nEXIxHd2p3xPcLhkN3Dusb6goeBjwnpQQTm/3OGXKE6K9/utssaxhRvZ\nsdtf/w8nE/QIVTyNFwHnP0xZYwqZLYwabn4Hu1TI/mtYzYE2rIwnXkGZC7879c25\nhqUYAS50TIugJkI5To/7GzqWrlnwagLKtTU6AOQU2CjPaWsjojgREp/78ztsIXQy\nREHr6HujrvnJKARxJ6KKnsCpdlkGfswpk6g0uv+a60D4b8xO5ZmKQShhncyVZpoa\na7WRm/4KipbYkdxbfnZyhXhd+jt5lj5Yv2p4wmLYAQKBgQD1UJyv0Go7re8bPBt7\nluLFYv+7dedkNmJ0usJ/RAGcWA1h422EGxmoRJzX4Ut5fhplunxw3GzvUH0ptJWb\n/6gChLABBdp2NjHNrrtDPWA7GWKfr7pyjWGVTemEbhKuGdJwACKRka2hwsAfTVj7\nZwz05s5x6PJ+yGzcV9cFGUL5/QKBgQDK5g/w/T8ThgV/bWdKuz+euY+MXeHXwfny\nf2MZ2m1nS7T1FkaNw7Ph2DsFKhphuFC+Rlhq3+7kOwUC4JdQMS7Ma/wwCMqIND9b\nJhcv78lKp0I+uD7NecjR0gt6IAHpxavS7MKfLAFR0HZNE4f8D10O/K6yFLYtf58+\nIApRswiEgQKBgQC9QPOgr6lFYWqWGEkbj8xje3zPoqZhKZPLekmS5WRYuZWZb1uO\nD1o79rMJ2UXg9OhokvZuG5/vAKmPA0Jol1OGndcq8tkXWbgSdjsCJNeYwHzVtTyi\nI3ClPvZotIK0zjcLMQ96Pmk14olVnNaJHXdheK7MMmriZL2XQC0iQdrqAQKBgQC5\nYouePUWsqP/M9kEyXvQ6KoGmVwFLCck+cHYz4QelId8tMDU2wmFRMSh8B4QjVS0x\nLUUMIZ88mVBy2JJoiwefb+r0WJP07wgUWDFHc2gP9dLpS57WTzfVvn0OEMCuwBXG\nmt0YYjSydC4jLn1JKSB12RolTBdIaxsswEmtbE+UAQKBgERcTYzq7Y1fO882Qnnc\n8eTo4uzM9cTxG7HYyugMMDKHd0CqNJoAl1gJPh3tD0UepD1HnStdtbWIzBL9N9LM\nvjXz7lBtGVPp5GS4SRT9blc7/oyl/a7nS87aWCT9w0XE46a2x+f4N+SFdGopOIhS\n38PL4C0V5eIFTib5YupjRC8+\n-----END PRIVATE KEY-----\n",
-  "client_email": "firebase-adminsdk-17cfb@botito-97706.iam.gserviceaccount.com",
-  "client_id": "103344260064145970575",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-17cfb%40botito-97706.iam.gserviceaccount.com"
-}
-
-
-
-
-
-
-cred = credentials.Certificate(hiii)
-databaseApp = firebase_admin.initialize_app(cred,{'databaseURL':os.environ['databaseURL']})
-
 intents = discord.Intents.default()
 intents.members = True
 
